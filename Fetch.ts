@@ -20,7 +20,7 @@ export class Fetch {
         };
     }
 
-    header(key: string, value: any) {
+    head(key: string, value: any) {
         this._options.headers[key] = value;
         return this;
     }
