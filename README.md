@@ -1,6 +1,6 @@
 # planck-http-fetch
 
-Simple http/https request library.
+Simple http/https fetch
 
 ```typescript
 let
