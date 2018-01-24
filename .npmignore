@@ -1,4 +1,5 @@
 .npmignore
+.gitignore
 .vscode
 Fetch.js.map
 Fetch.ts
