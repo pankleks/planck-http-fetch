@@ -1,0 +1,15 @@
+{
+  "name": "planck-http-fetch",
+  "version": "1.0.1",
+  "description": "",
+  "main": "Fetch.js",
+  "types": "Fetch.d.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Krzysztof Heim",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "9.3.0"    
+  }  
+}

@@ -1,0 +1,6 @@
+.npmignore
+.vscode
+Fetch.js.map
+Fetch.ts
+package-lock.json
+tsconfig.json
