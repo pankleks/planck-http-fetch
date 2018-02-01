@@ -1,18 +1,30 @@
 import { Fetch } from "./Fetch";
 
+const 
+    TEST = "hello";
+
 let
-    fetch = new Fetch("https://postman-echo.com/post");
+    t = new Date().getTime(),
+    fetch = new Fetch("https://postman-echo.com/post").head("X-Time", t);
 
 fetch
-    .fetch("hello", "text/plain").then(json => {
+    .fetch(TEST, "text/plain").then(json => {
         let
             obj = JSON.parse(json);
-        if (!obj || obj.data !== "hello")
-            console.error(`invalid response`);
-        else
-            console.info("all ok")
+        if (!obj)
+            console.log(`empty response`);
+        else {
+            if (obj.data !== TEST)
+                console.error("invalid data");
+            else {
+                if (!obj.headers || obj.headers["x-time"] != t)
+                    console.error("invalid header");
+                else
+                    console.info("all ok");
+            }
+        }
     })
     .catch(ex => {
-        console.error(`fetch failed: ${ex.message || ex}`);
+        console.error(`exception: ${ex.message || ex}`);
     });
 
