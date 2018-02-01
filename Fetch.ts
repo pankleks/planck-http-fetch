@@ -16,7 +16,8 @@ export class Fetch {
             protocol: temp.protocol,
             method: "GET",
             timeout: timeoutMS,
-            rejectUnauthorized: true
+            rejectUnauthorized: true,
+            headers: {}
         };
     }
 

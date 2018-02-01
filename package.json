@@ -1,6 +1,6 @@
 {
   "name": "planck-http-fetch",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Simple http/https fetch",
   "main": "Fetch.js",
   "types": "Fetch.d.ts",
@@ -13,7 +13,7 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/pankleks/planck-http-fetch"
-  },  
+  },
   "devDependencies": {
     "@types/node": "9.3.0"
   }
