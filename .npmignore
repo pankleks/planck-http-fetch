@@ -1,7 +1,8 @@
 .npmignore
 .gitignore
 .vscode
-Fetch.js.map
+*.js.map
 Fetch.ts
+Test.ts
 package-lock.json
 tsconfig.json

@@ -1,12 +1,12 @@
 {
   "name": "planck-http-fetch",
-  "version": "1.0.6",
+  "version": "1.1.0",
   "description": "Simple http/https fetch",
   "main": "Fetch.js",
   "types": "Fetch.d.ts",
   "scripts": {
     "build": "tsc",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node Test.js"
   },
   "author": "Krzysztof Heim",
   "license": "MIT",
