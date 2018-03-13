@@ -31,6 +31,11 @@ export class Fetch {
         return this;
     }
 
+    basicAuth(user: string, password: string) {
+        this._options.headers["Authorization"] = "Basic " + new Buffer(user + ":" + password).toString("base64");
+        return this;
+    }
+
     fetch(content?: string, contentType = "application/json;charset=utf-8") {
         if (content != null) {
             this._options.method = "POST";

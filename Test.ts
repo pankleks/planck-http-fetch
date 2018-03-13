@@ -1,6 +1,6 @@
 import { Fetch } from "./Fetch";
 
-const 
+const
     TEST = "hello";
 
 let
@@ -12,7 +12,7 @@ fetch
         let
             obj = JSON.parse(json);
         if (!obj)
-            console.log(`empty response`);
+            console.log("empty response");
         else {
             if (obj.data !== TEST)
                 console.error("invalid data");
@@ -28,3 +28,15 @@ fetch
         console.error(`exception: ${ex.message || ex}`);
     });
 
+// basic auth test
+new Fetch("https://postman-echo.com/basic-auth").basicAuth("postman", "password").fetch().then(json => {
+    let
+        obj = JSON.parse(json);
+    if (obj && obj.authenticated === true)
+        console.info("basic auth ok");
+    else
+        console.error("basic auth failed");
+
+}).catch(ex => {
+    console.error(`exception: ${ex.message || ex}`);
+});

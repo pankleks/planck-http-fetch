@@ -15,6 +15,7 @@ let
     data = await new Fetch("https://...", 1000) // url + timeout (if not set - 10s)
         .head("Api-Key", "123") // sets header
         .head("Host", "my.host.com")    // sets another header
+        .basicAuth("user", "password")  // enables basic auth in HTTP header
         .unauthorized() // skips certificate check if https
         .fetch("data to send", "text/plain");   // do request with data and content type
 ```
