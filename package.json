@@ -1,6 +1,6 @@
 {
   "name": "planck-http-fetch",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "Simple http/https fetch",
   "main": "Fetch.js",
   "types": "Fetch.d.ts",
