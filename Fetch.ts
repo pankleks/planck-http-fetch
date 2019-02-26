@@ -36,9 +36,9 @@ export class Fetch {
         return this;
     }
 
-    fetch(content?: string, contentType = "application/json;charset=utf-8") {
+    fetch(content?: string, method = "POST", contentType = "application/json;charset=utf-8") {
         if (content != null) {
-            this._options.method = "POST";
+            this._options.method = method;
             this._options.headers["Content-Type"] = contentType;
             this._options.headers["Content-Length"] = Buffer.byteLength(content, "utf8");
         }
