@@ -36,7 +36,7 @@ export class Fetch {
         return this;
     }
 
-    fetch(content?: string, method = "POST", contentType = "application/json;charset=utf-8") {
+    fetch(content?: string, contentType = "application/json;charset=utf-8", method = "POST") {
         if (content != null) {
             this._options.method = method;
             this._options.headers["Content-Type"] = contentType;
