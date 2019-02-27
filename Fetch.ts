@@ -36,12 +36,13 @@ export class Fetch {
         return this;
     }
 
-    fetch(content?: string, contentType = "application/json;charset=utf-8") {
+    fetch(content?: string, contentType = "application/json;charset=utf-8", method?:string) {
         if (content != null) {
             this._options.method = "POST";
             this._options.headers["Content-Type"] = contentType;
             this._options.headers["Content-Length"] = Buffer.byteLength(content, "utf8");
         }
+        if (method != null) { this._options.method = method}
 
         let
             requestFn = this._options.protocol === "http:" ? Http.request : Https.request;
