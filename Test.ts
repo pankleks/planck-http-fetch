@@ -1,9 +1,7 @@
 import { Fetch } from "./Fetch";
 
 const
-    TEST = "hello";
-
-let
+    TEST = "hello",
     t = new Date().getTime(),
     fetch = new Fetch("https://postman-echo.com/post").head("X-Time", t);
 
@@ -30,8 +28,7 @@ fetch
 
 // basic auth test
 new Fetch("https://postman-echo.com/basic-auth").basicAuth("postman", "password").fetch().then(json => {
-    let
-        obj = JSON.parse(json);
+    const obj = JSON.parse(json);
     if (obj && obj.authenticated === true)
         console.info("basic auth ok");
     else
