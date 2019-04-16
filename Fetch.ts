@@ -6,8 +6,7 @@ export class Fetch {
     private readonly _options: Https.RequestOptions;
 
     constructor(url: string, timeoutMS = 10000) {
-        let
-            temp = Url.parse(url);
+        const temp = Url.parse(url);
 
         this._options = {
             hostname: temp.hostname,
@@ -32,39 +31,39 @@ export class Fetch {
     }
 
     basicAuth(user: string, password: string) {
-        this._options.headers["Authorization"] = "Basic " + new Buffer(user + ":" + password).toString("base64");
+        this._options.headers["Authorization"] = "Basic " + Buffer.from(user + ":" + password).toString("base64");        
         return this;
     }
 
     fetch(content?: string | Buffer, contentType = "application/json;charset=utf-8", method?: string, encoding?: string) {
+
         if (content != null) {
             this._options.method = "POST";
             this._options.headers["Content-Type"] = contentType;
-            this._options.headers["Content-Length"] = Buffer.byteLength(content, "utf8");
+            this._options.headers["Content-Length"] = Buffer.byteLength(content, "utf8");            
         }
-        if (method != null) { this._options.method = method}
 
-        let
-            requestFn = this._options.protocol === "http:" ? Http.request : Https.request;
+        if (method != null)
+            this._options.method = method;
+
+        const requestFn = this._options.protocol === "http:" ? Http.request : Https.request;
 
         return new Promise<string>((resolve, reject) => {
-            let
-                request = requestFn(this._options, (response) => {
-                    if (response.statusCode < 200 || response.statusCode > 299)
-                        reject(new Error(`Http fetch failed, status = ${response.statusCode}, ${response.statusMessage}`));
-                    else {
-                        response.setEncoding("utf8");
+            const request = requestFn(this._options, (response) => {
+                if (response.statusCode < 200 || response.statusCode > 299)
+                    reject(new Error(`Http fetch failed, status = ${response.statusCode}, ${response.statusMessage}`));
+                else {
+                    response.setEncoding("utf8");
 
-                        let
-                            data = "";
-                        response.on("data", (chunk) => {
-                            data += chunk;
-                        });
-                        response.on("end", () => {
-                            resolve(data);
-                        });
-                    }
-                });
+                    let data = "";
+                    response.on("data", (chunk) => {
+                        data += chunk;
+                    });
+                    response.on("end", () => {
+                        resolve(data);
+                    });
+                }
+            });
 
             request.on("error", (ex) => {
                 reject(ex)
