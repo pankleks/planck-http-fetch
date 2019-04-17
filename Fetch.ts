@@ -40,7 +40,7 @@ export class Fetch {
         if (content != null) {
             this._options.method = "POST";
             this._options.headers["Content-Type"] = contentType;
-            this._options.headers["Content-Length"] = Buffer.byteLength(content, "utf8");            
+            this._options.headers["Content-Length"] = Buffer.byteLength(content, encoding || "utf8");            
         }
 
         if (method != null)
@@ -53,7 +53,7 @@ export class Fetch {
                 if (response.statusCode < 200 || response.statusCode > 299)
                     reject(new Error(`Http fetch failed, status = ${response.statusCode}, ${response.statusMessage}`));
                 else {
-                    response.setEncoding("utf8");
+                    response.setEncoding(encoding || "utf8");
 
                     let data = "";
                     response.on("data", (chunk) => {
