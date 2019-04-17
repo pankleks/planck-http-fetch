@@ -35,7 +35,8 @@ export class Fetch {
         return this;
     }
 
-    fetch(content?: string, contentType = "application/json;charset=utf-8", method?: string) {
+    fetch(content?: string | Buffer, contentType = "application/json;charset=utf-8", method?: string, encoding?: string) {
+
         if (content != null) {
             this._options.method = "POST";
             this._options.headers["Content-Type"] = contentType;
@@ -69,7 +70,7 @@ export class Fetch {
             });
 
             if (content != null)
-                request.write(content);
+                request.write(content, encoding);
 
             request.end();
         });
