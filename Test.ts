@@ -1,4 +1,5 @@
 import { Fetch } from "./Fetch";
+import * as Fs from "fs";
 
 (async () => {
     // echo test
@@ -39,12 +40,23 @@ import { Fetch } from "./Fetch";
 
     // basic auth test
     try {
-        const json = await new Fetch("https://postman-echo.com/basic-auth").basicAuth("postman", "password").fetch();
-        const obj = JSON.parse(json);
+        const
+            json = await new Fetch("https://postman-echo.com/basic-auth").basicAuth("postman", "password").fetch(),
+            obj = JSON.parse(json);
         if (obj && obj.authenticated === true)
             console.info("basic auth ok");
         else
             console.error("basic auth failed");
+    }
+    catch (ex) {
+        console.error(`exception: ${ex.message || ex}`);
+    }
+
+    // stream test
+    try {
+        const stream = Fs.createWriteStream("out.txt");
+        await new Fetch("https://postman-echo.com/stream/5").pipe(stream);        
+        console.info("stream ok");
     }
     catch (ex) {
         console.error(`exception: ${ex.message || ex}`);
