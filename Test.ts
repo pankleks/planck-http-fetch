@@ -1,18 +1,18 @@
 import { Fetch } from "./Fetch";
 
 (async () => {
-    const
-        TEST = "hello",
-        t = new Date().getTime(),
-        fetch = new Fetch("https://postman-echo.com/post").head("X-Time", t);
-
+    // echo test
     try {
-        const json = await fetch.fetch(TEST, "text/plain");
-        const obj = JSON.parse(json);
+        const
+            testText = "hello",
+            t = new Date().getTime(),
+            json = await new Fetch("https://postman-echo.com/post").head("X-Time", t).fetch(testText, "text/plain"),
+            obj = JSON.parse(json);
+
         if (!obj)
             console.log("empty response");
         else {
-            if (obj.data !== TEST)
+            if (obj.data !== testText)
                 console.error("invalid data");
             else {
                 if (!obj.headers || obj.headers["x-time"] != t)
@@ -28,12 +28,12 @@ import { Fetch } from "./Fetch";
 
     // error test
     try {
-        await new Fetch("http://google.com").fetch();
+        await new Fetch("https://postman-echo.com/status/500").fetch();
     }
     catch (ex) {
-        if (ex.statusCode !== 301)
+        if (ex.statusCode !== 500)
             console.error("error test failed");
-        else    
+        else
             console.info("error test ok");
     }
 

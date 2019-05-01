@@ -37,28 +37,50 @@ export class Fetch {
     }
 
     basicAuth(user: string, password: string) {
-        this._options.headers["Authorization"] = "Basic " + Buffer.from(user + ":" + password).toString("base64");        
+        this._options.headers["Authorization"] = "Basic " + Buffer.from(user + ":" + password).toString("base64");
         return this;
     }
 
-    fetch(content?: string | Buffer, contentType = "application/json;charset=utf-8", method?: string, encoding?: string) {
+    bearerAuth(token: string) {
+        this._options.headers["Authorization"] = `Bearer ${token}`;
+        return this;
+    }
 
+    private initRequest(resolve: (response: Http.IncomingMessage) => void, reject: (ex: FetchEx) => void) {
+        const request = (this._options.protocol === "http:" ? Http.request : Https.request)(
+            this._options,
+            (response) => {
+                if (response.statusCode < 200 || response.statusCode > 299)
+                    reject(new FetchEx(`http resp. invalid code = ${response.statusCode}, ${response.statusMessage}`, response.statusCode));
+                else {
+                    response.on("error", (ex) => {
+                        reject(new FetchEx(`http resp. error, ${ex.message || ex}`, response.statusCode));
+                    });
+
+                    resolve(response);
+                }
+            });
+
+        request.on("error", (ex) => {
+            reject(new FetchEx(`http req. error, ${ex.message || ex}`));
+        });
+
+        return request;
+    }
+
+    fetch(content?: string | Buffer, contentType = "application/json;charset=utf-8", method?: string, encoding?: string) {
         if (content != null) {
             this._options.method = "POST";
             this._options.headers["Content-Type"] = contentType;
-            this._options.headers["Content-Length"] = Buffer.byteLength(content, encoding || "utf8");            
+            this._options.headers["Content-Length"] = Buffer.byteLength(content, encoding || "utf8");
         }
 
         if (method != null)
             this._options.method = method;
 
-        const requestFn = this._options.protocol === "http:" ? Http.request : Https.request;
-
         return new Promise<string>((resolve, reject) => {
-            const request = requestFn(this._options, (response) => {
-                if (response.statusCode < 200 || response.statusCode > 299)                    
-                    reject(new FetchEx(`http fetch failed, status = ${response.statusCode}, ${response.statusMessage}`, response.statusCode));                
-                else {
+            const request = this.initRequest(
+                (response) => {
                     response.setEncoding(encoding || "utf8");
 
                     let data = "";
@@ -68,15 +90,26 @@ export class Fetch {
                     response.on("end", () => {
                         resolve(data);
                     });
-                }
-            });
-
-            request.on("error", (ex) => {                
-                reject(new FetchEx(`http fetch error, ${ex.message || ex}`))
-            });
+                },
+                reject);
 
             if (content != null)
                 request.write(content, encoding);
+
+            request.end();
+        });
+    }
+
+    pipe(stream: NodeJS.WritableStream, end?: boolean) {
+        return new Promise<string>((resolve, reject) => {
+            const request = this.initRequest(
+                (response) => {
+                    response.pipe(stream, { end });
+                    stream.on("finish", () => {
+                        resolve();
+                    });
+                },
+                reject);
 
             request.end();
         });
