@@ -1,14 +1,14 @@
 import { Fetch } from "./Fetch";
 
-const
-    TEST = "hello",
-    t = new Date().getTime(),
-    fetch = new Fetch("https://postman-echo.com/post").head("X-Time", t);
+(async () => {
+    const
+        TEST = "hello",
+        t = new Date().getTime(),
+        fetch = new Fetch("https://postman-echo.com/post").head("X-Time", t);
 
-fetch
-    .fetch(TEST, "text/plain").then(json => {
-        let
-            obj = JSON.parse(json);
+    try {
+        const json = await fetch.fetch(TEST, "text/plain");
+        const obj = JSON.parse(json);
         if (!obj)
             console.log("empty response");
         else {
@@ -21,19 +21,32 @@ fetch
                     console.info("all ok");
             }
         }
-    })
-    .catch(ex => {
+    }
+    catch (ex) {
         console.error(`exception: ${ex.message || ex}`);
-    });
+    }
 
-// basic auth test
-new Fetch("https://postman-echo.com/basic-auth").basicAuth("postman", "password").fetch().then(json => {
-    const obj = JSON.parse(json);
-    if (obj && obj.authenticated === true)
-        console.info("basic auth ok");
-    else
-        console.error("basic auth failed");
+    // error test
+    try {
+        await new Fetch("http://google.com").fetch();
+    }
+    catch (ex) {
+        if (ex.statusCode !== 301)
+            console.error("error test failed");
+        else    
+            console.info("error test ok");
+    }
 
-}).catch(ex => {
-    console.error(`exception: ${ex.message || ex}`);
-});
+    // basic auth test
+    try {
+        const json = await new Fetch("https://postman-echo.com/basic-auth").basicAuth("postman", "password").fetch();
+        const obj = JSON.parse(json);
+        if (obj && obj.authenticated === true)
+            console.info("basic auth ok");
+        else
+            console.error("basic auth failed");
+    }
+    catch (ex) {
+        console.error(`exception: ${ex.message || ex}`);
+    }
+})();

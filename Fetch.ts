@@ -2,6 +2,12 @@ import * as Http from "http";
 import * as Https from "https";
 import * as Url from "url";
 
+class FetchEx extends Error {
+    constructor(message: string, public readonly statusCode?: number) {
+        super(message);
+    }
+}
+
 export class Fetch {
     private readonly _options: Https.RequestOptions;
 
@@ -50,8 +56,8 @@ export class Fetch {
 
         return new Promise<string>((resolve, reject) => {
             const request = requestFn(this._options, (response) => {
-                if (response.statusCode < 200 || response.statusCode > 299)
-                    reject(new Error(`Http fetch failed, status = ${response.statusCode}, ${response.statusMessage}`));
+                if (response.statusCode < 200 || response.statusCode > 299)                    
+                    reject(new FetchEx(`http fetch failed, status = ${response.statusCode}, ${response.statusMessage}`, response.statusCode));                
                 else {
                     response.setEncoding(encoding || "utf8");
 
@@ -65,8 +71,8 @@ export class Fetch {
                 }
             });
 
-            request.on("error", (ex) => {
-                reject(ex)
+            request.on("error", (ex) => {                
+                reject(new FetchEx(`http fetch error, ${ex.message || ex}`))
             });
 
             if (content != null)
