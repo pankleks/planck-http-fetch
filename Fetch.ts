@@ -9,7 +9,7 @@ class FetchEx extends Error {
 }
 
 export class Fetch {
-    private readonly _options: Https.RequestOptions;
+    protected readonly _options: Https.RequestOptions;
 
     constructor(url: string, timeoutMS = 10000) {
         const temp = Url.parse(url);
