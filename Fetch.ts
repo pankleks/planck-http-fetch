@@ -11,6 +11,11 @@ class FetchEx extends Error {
 export class Fetch {
     protected readonly _options: Https.RequestOptions;
 
+    /**
+     * creates new instance of `Fetch` bound to given url
+     * @param url url
+     * @param timeoutMS timeout in miliseconds (by default 10 seconds)
+     */
     constructor(url: string, timeoutMS = 10000) {
         const temp = Url.parse(url);
 
@@ -26,21 +31,38 @@ export class Fetch {
         };
     }
 
+    /**
+     * sets request header
+     * @param key key
+     * @param value value
+     */
     head(key: string, value: any) {
         this._options.headers[key] = value;
         return this;
     }
 
+    /**
+     * use to ignore https certificate issues
+     */
     unauthorized() {
         this._options.rejectUnauthorized = false;
         return this;
     }
 
+    /**
+     * sets basic authorization header to given user/password
+     * @param user user
+     * @param password password
+     */
     basicAuth(user: string, password: string) {
         this._options.headers["Authorization"] = "Basic " + Buffer.from(user + ":" + password).toString("base64");
         return this;
     }
 
+    /**
+     * set bearer authorization header to given token
+     * @param token token
+     */
     bearerAuth(token: string) {
         this._options.headers["Authorization"] = `Bearer ${token}`;
         return this;
@@ -68,6 +90,14 @@ export class Fetch {
         return request;
     }
 
+    /**
+     * sends request with optional content
+     * @param content content
+     * @param contentType content type, by default `application/json`
+     * @param method http method, by default `GET` (or `POST` if content is set)
+     * @param encoding by default `utf-8`
+     * @async
+     */
     fetch(content?: string | Buffer, contentType = "application/json;charset=utf-8", method?: string, encoding?: string) {
         if (content != null) {
             this._options.method = "POST";
@@ -100,6 +130,11 @@ export class Fetch {
         });
     }
 
+    /**
+     * pipes response stream to given target stream
+     * @param stream target stream
+     * @param end if `true` closes stream after finishing
+     */
     pipe(stream: NodeJS.WritableStream, end?: boolean) {
         return new Promise<string>((resolve, reject) => {
             const request = this.initRequest(

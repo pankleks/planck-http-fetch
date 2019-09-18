@@ -24,3 +24,7 @@ For `fetch` method:
 > If `data` is set `POST` is used, else `GET`
 
 > If `contentType` is not set, `application/json;charset=utf-8` is used
+
+## More info?
+
+All methods have `JSDoc` comments, they provides more info on usage.
