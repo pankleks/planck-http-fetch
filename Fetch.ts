@@ -2,8 +2,8 @@ import * as Http from "http";
 import * as Https from "https";
 import * as Url from "url";
 
-class FetchEx extends Error {
-    constructor(message: string, public readonly statusCode?: number) {
+export class FetchEx extends Error {
+    constructor(message: string, public readonly statusCode?: number, data?: string) {
         super(message);
     }
 }
@@ -72,19 +72,16 @@ export class Fetch {
         const request = (this._options.protocol === "http:" ? Http.request : Https.request)(
             this._options,
             (response) => {
-                if (response.statusCode < 200 || response.statusCode > 299)
-                    reject(this._errorMap(new FetchEx(`http resp. invalid code = ${response.statusCode}, ${response.statusMessage}`, response.statusCode), response));
-                else {
-                    response.on("error", (ex) => {
-                        reject(this._errorMap(new FetchEx(`http resp. error, ${ex.message || ex}`, response.statusCode), response));
-                    });
+                response.on("error", (ex) => {
+                    reject(this._exMap(new FetchEx(`http resp. error, ${ex.message || ex}`, response.statusCode)));
+                });
 
-                    resolve(response);
-                }
-            });
+                resolve(response);
+            }
+        );
 
         request.on("error", (ex) => {
-            reject(this._errorMap(new FetchEx(`http req. error, ${ex.message || ex}`), undefined));
+            reject(this._exMap(new FetchEx(`http req. error, ${ex.message || ex}`), undefined));
         });
 
         return request;
@@ -117,8 +114,13 @@ export class Fetch {
                     response.on("data", (chunk) => {
                         data += chunk;
                     });
+
                     response.on("end", () => {
-                        resolve(data);
+                        if (response.statusCode < 200 || response.statusCode > 299)
+                            reject(this._exMap(new FetchEx(`http resp. invalid code = ${response.statusCode}, ${response.statusMessage}`, response.statusCode), data));
+                        else {
+                            resolve(data);
+                        }
                     });
                 },
                 reject);
@@ -139,10 +141,14 @@ export class Fetch {
         return new Promise<string>((resolve, reject) => {
             const request = this.initRequest(
                 (response) => {
-                    response.pipe(stream, { end });
-                    stream.on("finish", () => {
-                        resolve();
-                    });
+                    if (response.statusCode < 200 || response.statusCode > 299)
+                        reject(this._exMap(new FetchEx(`http resp. invalid code = ${response.statusCode}, ${response.statusMessage}`, response.statusCode)));
+                    else {
+                        response.pipe(stream, { end });
+                        stream.on("finish", () => {
+                            resolve();
+                        });
+                    }
                 },
                 reject);
 
@@ -151,13 +157,14 @@ export class Fetch {
     }
 
 
-    private _errorMap = (ex: Error, response:Http.IncomingMessage) => ex;
+    private _exMap = (ex: Error, data?: string) => ex;
 
     /**
      * use to set your custom error message mapping
      * @param fn map function
      */
-    errorMap(fn: (ex: Error, response: Http.IncomingMessage) => Error) {
-        this._errorMap = fn;
+    exMap(fn: (ex: Error, data?: string) => Error) {
+        this._exMap = fn;
+        return this;
     }
 }

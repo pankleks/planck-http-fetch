@@ -38,6 +38,23 @@ import * as Fs from "fs";
             console.info("error test ok");
     }
 
+    // error map
+    try {
+        await new Fetch("https://postman-echo.com/status/500")
+            .exMap((ex, data) => {
+                if (data && data === "{\"status\":500}")
+                    return new Error("mapping ok");
+                return ex;
+            })
+            .fetch();
+    }
+    catch (ex) {
+        if (ex.message === "mapping ok")
+            console.info("error map test ok");
+        else
+            console.error("error map test failed");
+    }
+
     // basic auth test
     try {
         const
@@ -55,7 +72,7 @@ import * as Fs from "fs";
     // stream test
     try {
         const stream = Fs.createWriteStream("out.txt");
-        await new Fetch("https://postman-echo.com/stream/5").pipe(stream);        
+        await new Fetch("https://postman-echo.com/stream/5").pipe(stream);
         console.info("stream ok");
     }
     catch (ex) {
