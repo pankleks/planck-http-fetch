@@ -21,7 +21,7 @@ export class Fetch {
 
         this._options = {
             hostname: temp.hostname,
-            port: Number.parseInt(temp.port),
+            port: Number(temp.port),
             path: temp.path,
             protocol: temp.protocol,
             method: "GET",
@@ -73,10 +73,10 @@ export class Fetch {
             this._options,
             (response) => {
                 if (response.statusCode < 200 || response.statusCode > 299)
-                    reject(new FetchEx(`http resp. invalid code = ${response.statusCode}, ${response.statusMessage}`, response.statusCode));
+                    reject(this._errorMap(new FetchEx(`http resp. invalid code = ${response.statusCode}, ${response.statusMessage}`, response.statusCode), response));
                 else {
                     response.on("error", (ex) => {
-                        reject(new FetchEx(`http resp. error, ${ex.message || ex}`, response.statusCode));
+                        reject(this._errorMap(new FetchEx(`http resp. error, ${ex.message || ex}`, response.statusCode), response));
                     });
 
                     resolve(response);
@@ -84,7 +84,7 @@ export class Fetch {
             });
 
         request.on("error", (ex) => {
-            reject(new FetchEx(`http req. error, ${ex.message || ex}`));
+            reject(this._errorMap(new FetchEx(`http req. error, ${ex.message || ex}`), undefined));
         });
 
         return request;
@@ -148,5 +148,16 @@ export class Fetch {
 
             request.end();
         });
+    }
+
+
+    private _errorMap = (ex: Error, response:Http.IncomingMessage) => ex;
+
+    /**
+     * use to set your custom error message mapping
+     * @param fn map function
+     */
+    errorMap(fn: (ex: Error, response: Http.IncomingMessage) => Error) {
+        this._errorMap = fn;
     }
 }
