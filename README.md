@@ -11,7 +11,8 @@ Simple promise-based HTTP/HTTPS fetch.
 ```typescript
 import { Fetch } from "planck-http-fetch";
 
-const data = await new Fetch("https://...", 1000) // url + timeout (if not set - 10s)
+const data = await new Fetch("https://...") // url
+    .timeout(5000)  // timeout 5s
     .head("Api-Key", "123") // sets header
     .head("Host", "my.host.com")    // sets another header
     .basicAuth("user", "password")  // enables basic auth in HTTP header
@@ -24,6 +25,10 @@ For `fetch` method:
 > If `data` is set `POST` is used, else `GET`
 
 > If `contentType` is not set, `application/json;charset=utf-8` is used
+
+### 307 temp. redirect
+
+From version 1.7.2, temp. redirections (307) are handled automatically
 
 ## More info?
 

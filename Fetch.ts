@@ -13,22 +13,45 @@ export class Fetch {
 
     /**
      * creates new instance of `Fetch` bound to given url
-     * @param url url
-     * @param timeoutMS timeout in miliseconds (by default 10 seconds)
+     * @param url url     
      */
-    constructor(url: string, timeoutMS = 10000) {
+    constructor(url: string, options?: Https.RequestOptions) {
         const temp = Url.parse(url);
 
-        this._options = {
+        if (!options)
+            options = {
+                method: "GET",
+                timeout: 20000,
+                rejectUnauthorized: true,
+                headers: {}
+            }
+
+        this._options = Object.assign(options, {
             hostname: temp.hostname,
             port: Number(temp.port),
             path: temp.path,
-            protocol: temp.protocol,
-            method: "GET",
-            timeout: timeoutMS,
-            rejectUnauthorized: true,
-            headers: {}
-        };
+            protocol: temp.protocol
+        });
+    }
+
+    /**
+     * sets request timeout (by default timeout is auto-set for 20 seconds)
+     * @param ms timeout in miliseconds
+     */
+    timeout(ms: number) {
+        this._options.timeout = ms;
+        return this;
+    }
+
+    /**
+     * setup https options
+     * @param key 
+     * @param cert 
+     */
+    cert(key: string, cert: string) {
+        this._options.key = key;
+        this._options.cert = cert;
+        return this;
     }
 
     /**
@@ -73,7 +96,7 @@ export class Fetch {
             this._options,
             (response) => {
                 response.on("error", (ex) => {
-                    reject(this._exMap(new FetchEx(`http resp. error, ${ex.message || ex}`, response.statusCode)));
+                    reject(this._exMap(new FetchEx(`http resp. error -> ${ex.message || ex}`, response.statusCode)));
                 });
 
                 resolve(response);
@@ -81,8 +104,12 @@ export class Fetch {
         );
 
         request.on("error", (ex) => {
-            reject(this._exMap(new FetchEx(`http req. error, ${ex.message || ex}`), undefined));
+            reject(this._exMap(new FetchEx(`http req. error -> ${ex.message || ex}, aborted = ${request.aborted}`)));
         });
+
+        request.on("timeout", () => {
+            request.destroy(new Error("timeout"));
+        })
 
         return request;
     }
@@ -92,10 +119,12 @@ export class Fetch {
      * @param content content
      * @param contentType content type, by default `application/json`
      * @param method http method, by default `GET` (or `POST` if content is set)
-     * @param encoding by default `utf-8`
+     * @param encoding by default `utf8`
      * @async
      */
-    fetch(content?: string | Buffer, contentType = "application/json;charset=utf-8", method?: string, encoding?: string) {
+    fetch(content?: string | Buffer, contentType = "application/json;charset=utf-8", method?: string, encoding?: string, options?: {
+        handle307Redirect?: boolean
+    }) {
         if (content != null) {
             this._options.method = "POST";
             this._options.headers["Content-Type"] = contentType;
@@ -116,10 +145,18 @@ export class Fetch {
                     });
 
                     response.on("end", () => {
-                        if (response.statusCode < 200 || response.statusCode > 299)
-                            reject(this._exMap(new FetchEx(`http resp. invalid code = ${response.statusCode}, ${response.statusMessage}`, response.statusCode), data));
+                        if (response.statusCode === 307 && options?.handle307Redirect) {
+                            const location = response.headers.location;
+                            if (!location)
+                                reject(this._exMap(new FetchEx(`got redirect code = ${response.statusCode}, but without location`, response.statusCode, data)));
+                            else
+                                resolve(new Fetch(location, this._options).fetch(content, contentType, method, encoding));
+                        }
                         else {
-                            resolve(data);
+                            if (response.statusCode < 200 || response.statusCode > 299)
+                                reject(this._exMap(new FetchEx(`http resp. invalid code = ${response.statusCode}, ${response.statusMessage}`, response.statusCode), data));
+                            else
+                                resolve(data);
                         }
                     });
                 },
