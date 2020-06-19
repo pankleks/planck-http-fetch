@@ -122,9 +122,7 @@ export class Fetch {
      * @param encoding by default `utf8`
      * @async
      */
-    fetch(content?: string | Buffer, contentType = "application/json;charset=utf-8", method?: string, encoding?: string, options?: {
-        handle307Redirect?: boolean
-    }) {
+    fetch(content?: string | Buffer, contentType = "application/json;charset=utf-8", method?: string, encoding?: string) {
         if (content != null) {
             this._options.method = "POST";
             this._options.headers["Content-Type"] = contentType;
@@ -145,7 +143,7 @@ export class Fetch {
                     });
 
                     response.on("end", () => {
-                        if (response.statusCode === 307 && options?.handle307Redirect) {
+                        if (response.statusCode === 307) {
                             const location = response.headers.location;
                             if (!location)
                                 reject(this._exMap(new FetchEx(`got redirect code = ${response.statusCode}, but without location`, response.statusCode, data)));
