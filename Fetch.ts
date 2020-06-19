@@ -44,6 +44,17 @@ export class Fetch {
     }
 
     /**
+     * setup https options
+     * @param key 
+     * @param cert 
+     */
+    cert(key: string, cert: string) {
+        this._options.key = key;
+        this._options.cert = cert;
+        return this;
+    }
+
+    /**
      * sets request header
      * @param key key
      * @param value value
@@ -111,7 +122,9 @@ export class Fetch {
      * @param encoding by default `utf8`
      * @async
      */
-    fetch(content?: string | Buffer, contentType = "application/json;charset=utf-8", method?: string, encoding?: string) {
+    fetch(content?: string | Buffer, contentType = "application/json;charset=utf-8", method?: string, encoding?: string, options?: {
+        handle307Redirect?: boolean
+    }) {
         if (content != null) {
             this._options.method = "POST";
             this._options.headers["Content-Type"] = contentType;
@@ -132,18 +145,19 @@ export class Fetch {
                     });
 
                     response.on("end", () => {
-                        if (response.statusCode === 307) {
+                        if (response.statusCode === 307 && options?.handle307Redirect) {
                             const location = response.headers.location;
                             if (!location)
-                                return reject(this._exMap(new FetchEx(`got redirect code = ${response.statusCode}, but without location`, response.statusCode, data)));
-
-                            return resolve(new Fetch(location, this._options).fetch(content, contentType, method, encoding));
+                                reject(this._exMap(new FetchEx(`got redirect code = ${response.statusCode}, but without location`, response.statusCode, data)));
+                            else
+                                resolve(new Fetch(location, this._options).fetch(content, contentType, method, encoding));
                         }
-
-                        if (response.statusCode < 200 || response.statusCode > 299)
-                            return reject(this._exMap(new FetchEx(`http resp. invalid code = ${response.statusCode}, ${response.statusMessage}`, response.statusCode), data));
-
-                        return resolve(data);
+                        else {
+                            if (response.statusCode < 200 || response.statusCode > 299)
+                                reject(this._exMap(new FetchEx(`http resp. invalid code = ${response.statusCode}, ${response.statusMessage}`, response.statusCode), data));
+                            else
+                                resolve(data);
+                        }
                     });
                 },
                 reject);

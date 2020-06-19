@@ -81,7 +81,7 @@ import * as Fs from "fs";
 
     // timeout
     try {
-        const temp = await new Fetch("https://postman-echo.com/delay/10").timeout(1000).fetch();
+        await new Fetch("https://postman-echo.com/delay/10").timeout(1000).fetch();
         console.error("timeout failed");
     }
     catch (ex) {

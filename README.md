@@ -26,6 +26,10 @@ For `fetch` method:
 
 > If `contentType` is not set, `application/json;charset=utf-8` is used
 
+### 307 temp. redirect
+
+From version 1.7.2, temp. redirections (307) are handled automatically
+
 ## More info?
 
 All methods have `JSDoc` comments, they provides more info on usage.
