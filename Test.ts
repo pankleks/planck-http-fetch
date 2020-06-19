@@ -78,4 +78,6 @@ import * as Fs from "fs";
     catch (ex) {
         console.error(`exception: ${ex.message || ex}`);
     }
+
+    // temp. redirect test (307)
 })();

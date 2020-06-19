@@ -16,19 +16,28 @@ export class Fetch {
      * @param url url
      * @param timeoutMS timeout in miliseconds (by default 10 seconds)
      */
-    constructor(url: string, timeoutMS = 10000) {
+    constructor(url: string, options?: Https.RequestOptions) {
         const temp = Url.parse(url);
 
-        this._options = {
+        if (!options)
+            options = {
+                method: "GET",
+                timeout: 10000,
+                rejectUnauthorized: true,
+                headers: {}
+            }
+
+        this._options = Object.assign(options, {
             hostname: temp.hostname,
             port: Number(temp.port),
             path: temp.path,
-            protocol: temp.protocol,
-            method: "GET",
-            timeout: timeoutMS,
-            rejectUnauthorized: true,
-            headers: {}
-        };
+            protocol: temp.protocol
+        });
+    }
+
+    timeout(ms: number) {
+        this._options.timeout = ms;
+        return this;
     }
 
     /**
@@ -116,11 +125,18 @@ export class Fetch {
                     });
 
                     response.on("end", () => {
+                        if (response.statusCode === 307) {
+                            const location = response.headers.location;
+                            if (!location)
+                                reject(this._exMap(new FetchEx(`got redirect code = ${response.statusCode}, but without location`, response.statusCode, data)));
+
+                            resolve(new Fetch(location, this._options).fetch(content, contentType, method, encoding));
+                        }
+
                         if (response.statusCode < 200 || response.statusCode > 299)
                             reject(this._exMap(new FetchEx(`http resp. invalid code = ${response.statusCode}, ${response.statusMessage}`, response.statusCode), data));
-                        else {
-                            resolve(data);
-                        }
+                        else
+                            resolve(data);                        
                     });
                 },
                 reject);
