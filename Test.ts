@@ -79,5 +79,17 @@ import * as Fs from "fs";
         console.error(`exception: ${ex.message || ex}`);
     }
 
+    // timeout
+    try {
+        const temp = await new Fetch("https://postman-echo.com/delay/10").timeout(1000).fetch();
+        console.error("timeout failed");
+    }
+    catch (ex) {
+        if (ex.message?.includes("timeout"))
+            console.info("timeout ok");
+        else
+            console.error("got timeout, but invalid ex");
+    }
+
     // temp. redirect test (307)
 })();

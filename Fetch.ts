@@ -13,8 +13,7 @@ export class Fetch {
 
     /**
      * creates new instance of `Fetch` bound to given url
-     * @param url url
-     * @param timeoutMS timeout in miliseconds (by default 10 seconds)
+     * @param url url     
      */
     constructor(url: string, options?: Https.RequestOptions) {
         const temp = Url.parse(url);
@@ -22,7 +21,7 @@ export class Fetch {
         if (!options)
             options = {
                 method: "GET",
-                timeout: 10000,
+                timeout: 20000,
                 rejectUnauthorized: true,
                 headers: {}
             }
@@ -35,6 +34,10 @@ export class Fetch {
         });
     }
 
+    /**
+     * sets request timeout (by default timeout is auto-set for 20 seconds)
+     * @param ms timeout in miliseconds
+     */
     timeout(ms: number) {
         this._options.timeout = ms;
         return this;
@@ -82,7 +85,7 @@ export class Fetch {
             this._options,
             (response) => {
                 response.on("error", (ex) => {
-                    reject(this._exMap(new FetchEx(`http resp. error, ${ex.message || ex}`, response.statusCode)));
+                    reject(this._exMap(new FetchEx(`http resp. error -> ${ex.message || ex}`, response.statusCode)));
                 });
 
                 resolve(response);
@@ -90,8 +93,12 @@ export class Fetch {
         );
 
         request.on("error", (ex) => {
-            reject(this._exMap(new FetchEx(`http req. error, ${ex.message || ex}`), undefined));
+            reject(this._exMap(new FetchEx(`http req. error -> ${ex.message || ex}, aborted = ${request.aborted}`)));
         });
+
+        request.on("timeout", () => {
+            request.destroy(new Error("timeout"));
+        })
 
         return request;
     }
@@ -101,7 +108,7 @@ export class Fetch {
      * @param content content
      * @param contentType content type, by default `application/json`
      * @param method http method, by default `GET` (or `POST` if content is set)
-     * @param encoding by default `utf-8`
+     * @param encoding by default `utf8`
      * @async
      */
     fetch(content?: string | Buffer, contentType = "application/json;charset=utf-8", method?: string, encoding?: string) {
@@ -128,15 +135,15 @@ export class Fetch {
                         if (response.statusCode === 307) {
                             const location = response.headers.location;
                             if (!location)
-                                reject(this._exMap(new FetchEx(`got redirect code = ${response.statusCode}, but without location`, response.statusCode, data)));
+                                return reject(this._exMap(new FetchEx(`got redirect code = ${response.statusCode}, but without location`, response.statusCode, data)));
 
-                            resolve(new Fetch(location, this._options).fetch(content, contentType, method, encoding));
+                            return resolve(new Fetch(location, this._options).fetch(content, contentType, method, encoding));
                         }
 
                         if (response.statusCode < 200 || response.statusCode > 299)
-                            reject(this._exMap(new FetchEx(`http resp. invalid code = ${response.statusCode}, ${response.statusMessage}`, response.statusCode), data));
-                        else
-                            resolve(data);                        
+                            return reject(this._exMap(new FetchEx(`http resp. invalid code = ${response.statusCode}, ${response.statusMessage}`, response.statusCode), data));
+
+                        return resolve(data);
                     });
                 },
                 reject);
