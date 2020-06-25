@@ -114,6 +114,13 @@ export class Fetch {
         return request;
     }
 
+    private _respHeaders: Http.IncomingHttpHeaders;
+
+    /** get last response headers */
+    get respHeaders() {
+        return this._respHeaders;
+    }
+
     /**
      * sends request with optional content
      * @param content content
@@ -153,8 +160,10 @@ export class Fetch {
                         else {
                             if (response.statusCode < 200 || response.statusCode > 299)
                                 reject(this._exMap(new FetchEx(`http resp. invalid code = ${response.statusCode}, ${response.statusMessage}`, response.statusCode), data));
-                            else
+                            else {
+                                this._respHeaders = response.headers;
                                 resolve(data);
+                            }
                         }
                     });
                 },
